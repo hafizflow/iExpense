@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  iExpense
-//
-//  Created by Hafizur Rahman on 25/11/25.
-//
-
 import SwiftUI
 
 struct ExpenseItem: Identifiable, Codable {
@@ -12,6 +5,7 @@ struct ExpenseItem: Identifiable, Codable {
     let name: String
     let type: String
     let amount: Double
+    let currency: String
 }
 
 @Observable
@@ -39,10 +33,37 @@ struct ContentView: View {
     @State private var expenses = Expenses()
     @State private var showAddItem = false
     
+    func amountColor(for amount: Double) -> Color {
+        switch amount {
+            case ..<20:
+                return .green
+            case ..<50:
+                return .orange
+            case ..<100:
+                return .blue
+            default:
+                return .red
+        }
+    }
+    
+    @State private var expenseType: String = "All"
+    let expenseTypes: [String] = ["All", "Personal", "Business"]
+    
+    
     var body: some View {
         NavigationStack {
             List {
-                ForEach(expenses.items) { item in
+                Picker("", selection: $expenseType.animation()) {
+                    ForEach(expenseTypes, id: \.self) {
+                        Text($0)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                
+                ForEach(expenses.items.filter { item in
+                    expenseType == "All" || item.type == expenseType
+                }) { item in
                     HStack(alignment: .center) {
                         VStack(alignment: .leading) {
                             Text(item.name).font(.headline)
@@ -50,7 +71,9 @@ struct ContentView: View {
                         }
                         
                         Spacer()
-                        Text(item.amount, format: .currency(code: "usd")).font(.headline)
+                        Text(item.amount, format: .currency(code: item.currency))
+                            .font(.headline)
+                            .foregroundStyle(amountColor(for: item.amount))
                     }
                 }
                 .onDelete(perform: deleteItems)
