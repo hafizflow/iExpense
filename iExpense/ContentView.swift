@@ -49,6 +49,8 @@ struct ContentView: View {
     @State private var expenseType: String = "All"
     let expenseTypes: [String] = ["All", "Personal", "Business"]
     
+    @State private var selectedItem: ExpenseItem?
+    
     
     var body: some View {
         NavigationStack {
@@ -75,8 +77,20 @@ struct ContentView: View {
                             .font(.headline)
                             .foregroundStyle(amountColor(for: item.amount))
                     }
+                    .onTapGesture {
+                        selectedItem = item
+                    }
+                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                        Button {
+                            selectedItem = item
+                        } label: {
+                            Text("Edit")
+                        }
+                        .tint(.blue)
+                    }
                 }
                 .onDelete(perform: deleteItems)
+                
             }
             .navigationTitle("iExpenses")
             .toolbar {
