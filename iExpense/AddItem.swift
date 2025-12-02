@@ -39,15 +39,24 @@ struct AddItem: View {
             }
             .navigationTitle("Add Item")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden()
             .toolbar {
-                Button("Save") {
-                    let item = ExpenseItem(name: name, type: type, amount: amount, currency: selectedCurrency)
-                    expense.items.append(item)
-                    
-                    name = ""
-                    amount = 0.0
-                    
-                    dismiss()
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Save") {
+                        let item = ExpenseItem(name: name, type: type, amount: amount, currency: selectedCurrency)
+                        expense.items.append(item)
+                        
+                        name = ""
+                        amount = 0.0
+                        
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("", systemImage: "multiply") {
+                        dismiss()
+                    }
                 }
             }
         }

@@ -51,6 +51,8 @@ struct ContentView: View {
     
     @State private var selectedItem: ExpenseItem?
     
+    @State private var title = "iExpenses"
+    
     
     var body: some View {
         NavigationStack {
@@ -92,15 +94,13 @@ struct ContentView: View {
                 .onDelete(perform: deleteItems)
                 
             }
-            .navigationTitle("iExpenses")
             .toolbar {
-                Button("Add") {
-                    showAddItem = true
+                NavigationLink(destination: AddItem(expense: expenses)) {
+                    Text("Add")
                 }
             }
-            .sheet(isPresented: $showAddItem) {
-                AddItem(expense: expenses)
-            }
+            .navigationTitle($title)
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
     
@@ -112,3 +112,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
