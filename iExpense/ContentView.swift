@@ -1,36 +1,29 @@
+import SwiftData
 import SwiftUI
 
-struct ExpenseItem: Identifiable, Codable {
-    var id = UUID()
-    let name: String
-    let type: String
-    let amount: Double
-    let currency: String
-}
-
-@Observable
-class Expenses {
-    var items = [ExpenseItem]() {
-        didSet {
-            if let encoded = try? JSONEncoder().encode(items) {
-                UserDefaults.standard.set(encoded, forKey: "Items")
-            }
-        }
-    }
+@Model
+class ExpenseItem {
+    var name: String
+    var type: String
+    var amount: Double
+    var currency: String
     
-    init() {
-        if let savedItems = UserDefaults.standard.data(forKey: "Items") {
-            if let decoded = try? JSONDecoder().decode([ExpenseItem].self, from: savedItems) {
-                items = decoded
-                return
-            }
-        }
-        items = []
+    init(
+        name: String,
+        type: String,
+        amount: Double,
+        currency: String
+    ) {
+        self.name = name
+        self.type = type
+        self.amount = amount
+        self.currency = currency
     }
 }
 
 struct ContentView: View {
-    @State private var expenses = Expenses()
+    @Environment(\.modelContext) var modelContext
+    @Query var expenses: [ExpenseItem]
     @State private var showAddItem = false
     
     func amountColor(for amount: Double) -> Color {
@@ -48,9 +41,6 @@ struct ContentView: View {
     
     @State private var expenseType: String = "All"
     let expenseTypes: [String] = ["All", "Personal", "Business"]
-    
-    @State private var selectedItem: ExpenseItem?
-    
     @State private var title = "iExpenses"
     
     
@@ -65,7 +55,7 @@ struct ContentView: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 
-                ForEach(expenses.items.filter { item in
+                ForEach(expenses.filter { item in
                     expenseType == "All" || item.type == expenseType
                 }) { item in
                     HStack(alignment: .center) {
@@ -79,23 +69,12 @@ struct ContentView: View {
                             .font(.headline)
                             .foregroundStyle(amountColor(for: item.amount))
                     }
-                    .onTapGesture {
-                        selectedItem = item
-                    }
-                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                        Button {
-                            selectedItem = item
-                        } label: {
-                            Text("Edit")
-                        }
-                        .tint(.blue)
-                    }
                 }
-                .onDelete(perform: deleteItems)
+                .onDelete(perform: deleteItem)
                 
             }
             .toolbar {
-                NavigationLink(destination: AddItem(expense: expenses)) {
+                NavigationLink(destination: AddItem()) {
                     Text("Add")
                 }
             }
@@ -104,12 +83,15 @@ struct ContentView: View {
         }
     }
     
-    func deleteItems(offsets: IndexSet) {
-        expenses.items.remove(atOffsets: offsets)
+    func deleteItem(offSet: IndexSet) {
+        for index in offSet {
+            modelContext.delete(expenses[index])
+        }
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: ExpenseItem.self)
 }
 

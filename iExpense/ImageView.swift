@@ -1,10 +1,3 @@
-    //
-    //  ImageView.swift
-    //  iExpense
-    //
-    //  Created by Hafizur Rahman on 26/11/25.
-    //
-
 import SwiftUI
 
 struct User: Codable {
