@@ -12,26 +12,29 @@ struct ExpenseView: View {
     @Environment(\.modelContext) var modelContext
     @Query var expenses: [ExpenseItem]
     
-    @State private var expenseType: String = "All"
-    let expenseTypes: [String] = ["All", "Personal", "Business"]
+    let filterType: String
     
-    init(sortOrder: [SortDescriptor<ExpenseItem>]) {
-        _expenses = Query(sort: sortOrder)
+    init(
+        sortOrder: [SortDescriptor<ExpenseItem>],
+        filterType: String = "All"
+    ) {
+        self.filterType = filterType
+        
+        let predicate: Predicate<ExpenseItem>
+        if filterType == "All" {
+            predicate = #Predicate { _ in true }
+        } else {
+            predicate = #Predicate { item in
+                item.type == filterType
+            }
+        }
+        
+        _expenses = Query(filter: predicate, sort: sortOrder)
     }
     
     var body: some View {
         List {
-            Picker("", selection: $expenseType.animation()) {
-                ForEach(expenseTypes, id: \.self) {
-                    Text($0)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            
-            ForEach(expenses.filter { item in
-                expenseType == "All" || item.type == expenseType
-            }) { item in
+            ForEach(expenses) { item in
                 HStack(alignment: .center) {
                     VStack(alignment: .leading) {
                         Text(item.name).font(.headline)

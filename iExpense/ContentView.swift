@@ -8,21 +8,36 @@ struct ContentView: View {
         SortDescriptor(\ExpenseItem.amount, order: .reverse)
     ]
     
+    @State private var filterType = "All"
+    
     var body: some View {
         NavigationStack {
-            ExpenseView(sortOrder: sortOrder)
+            ExpenseView(sortOrder: sortOrder, filterType: filterType)
                 .toolbar {
                     NavigationLink { AddItem() } label: {
-                        Text("Add")
+                        Image(systemName: "plus")
                     }
                     
                     Menu("Sort", systemImage: "arrow.up.arrow.down") {
                         Picker("Sort", selection: $sortOrder.animation()) {
                             Text("Sort by amount")
-                                .tag([ SortDescriptor(\ExpenseItem.name) ])
+                                .tag([ SortDescriptor(\ExpenseItem.amount, order: .reverse) ])
                             
-                            Text("Sort by amount")
-                                .tag([ SortDescriptor(\ExpenseItem.amount) ])
+                            Text("Sort by name")
+                                .tag([ SortDescriptor(\ExpenseItem.name, order: .reverse) ])
+                        }
+                    }
+                    
+                    Menu("Type", systemImage: "return") {
+                        Picker("Filter", selection: $filterType.animation()) {
+                            Text("All")
+                                .tag("All")
+                            
+                            Text("Personal")
+                                .tag("Personal")
+                            
+                            Text("Business")
+                                .tag("Business")
                         }
                     }
                 }
